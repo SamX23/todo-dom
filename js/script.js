@@ -27,6 +27,22 @@ const addTodo = () => {
   document.dispatchEvent(new Event(RENDER_EVENT));
 };
 
+const findTodo = (todoId) => {
+  for (const todoItem of TODOS) {
+    if (todoItem.id === todoId) return todoItem;
+  }
+  return null;
+};
+
+const addTaskToCompleted = (todoId) => {
+  const todoTarget = findTodo(todoId);
+
+  if (todoTarget != null) {
+    todoTarget.isCompleted = true;
+    document.dispatchEvent(new Event(RENDER_EVENT));
+  }
+};
+
 const makeTodo = (todoObject) => {
   const textTitle = document.createElement("h2");
   textTitle.innerText = todoObject.task;
@@ -43,6 +59,33 @@ const makeTodo = (todoObject) => {
   container.append(textContainer);
   container.setAttribute("id", `todo-${todoObject.id}`);
 
+  if (todoObject.isCompleted) {
+    const undoButton = document.createElement("button");
+    undoButton.classList.add("undo-button");
+
+    undoButton.addEventListener("click", () =>
+      undoTaskFromCompleted(todoObject.id)
+    );
+
+    const trashButton = document.createElement("button");
+    trashButton.classList.add("trash-button");
+
+    trashButton.addEventListener("click", () =>
+      removeTaskFromCompleted(todoObject.id)
+    );
+
+    container.append(undoButton, trashButton);
+  } else {
+    const checkButton = document.createElement("button");
+    checkButton.classList.add("check-button");
+
+    checkButton.addEventListener("click", () =>
+      addTaskToCompleted(todoObject.id)
+    );
+
+    container.append(checkButton);
+  }
+
   return container;
 };
 
@@ -54,12 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-document.addEventListener(RENDER_EVENT, function () {
+document.addEventListener(RENDER_EVENT, () => {
   const uncompletedTODOList = document.getElementById("todos");
   uncompletedTODOList.innerHTML = "";
 
   for (const todoItem of TODOS) {
     const todoElement = makeTodo(todoItem);
-    uncompletedTODOList.append(todoElement);
+    if (!todoItem.isCompleted) {
+      uncompletedTODOList.append(todoElement);
+    }
   }
 });
