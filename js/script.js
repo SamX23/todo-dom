@@ -43,6 +43,34 @@ const addTaskToCompleted = (todoId) => {
   }
 };
 
+const findTodoIndex = (todoId) => {
+  for (const index in todos) {
+    if (todos[index].id === todoId) {
+      return index;
+    }
+  }
+
+  return -1;
+};
+
+const removeTaskFromCompleted = (todoId) => {
+  const todoTarget = findTodoIndex(todoId);
+
+  if (todoTarget === -1) return;
+
+  todos.splice(todoTarget, 1);
+  document.dispatchEvent(new Event(RENDER_EVENT));
+};
+
+const undoTaskFromCompleted = (todoId) => {
+  const todoTarget = findTodo(todoId);
+
+  if (todoTarget == null) return;
+
+  todoTarget.isCompleted = false;
+  document.dispatchEvent(new Event(RENDER_EVENT));
+};
+
 const makeTodo = (todoObject) => {
   const textTitle = document.createElement("h2");
   textTitle.innerText = todoObject.task;
@@ -106,5 +134,19 @@ document.addEventListener(RENDER_EVENT, () => {
     if (!todoItem.isCompleted) {
       uncompletedTODOList.append(todoElement);
     }
+  }
+});
+
+document.addEventListener(RENDER_EVENT, function () {
+  const uncompletedTODOList = document.getElementById("todos");
+  uncompletedTODOList.innerHTML = "";
+
+  const completedTODOList = document.getElementById("finished");
+  completedTODOList.innerHTML = "";
+
+  for (const todoItem of todos) {
+    const todoElement = makeTodo(todoItem);
+    if (!todoItem.isCompleted) uncompletedTODOList.append(todoElement);
+    else completedTODOList.append(todoElement);
   }
 });
