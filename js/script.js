@@ -44,8 +44,8 @@ const addTaskToCompleted = (todoId) => {
 };
 
 const findTodoIndex = (todoId) => {
-  for (const index in todos) {
-    if (todos[index].id === todoId) {
+  for (const index in TODOS) {
+    if (TODOS[index].id === todoId) {
       return index;
     }
   }
@@ -58,7 +58,7 @@ const removeTaskFromCompleted = (todoId) => {
 
   if (todoTarget === -1) return;
 
-  todos.splice(todoTarget, 1);
+  TODOS.splice(todoTarget, 1);
   document.dispatchEvent(new Event(RENDER_EVENT));
 };
 
@@ -129,24 +129,13 @@ document.addEventListener(RENDER_EVENT, () => {
   const uncompletedTODOList = document.getElementById("todos");
   uncompletedTODOList.innerHTML = "";
 
-  for (const todoItem of TODOS) {
-    const todoElement = makeTodo(todoItem);
-    if (!todoItem.isCompleted) {
-      uncompletedTODOList.append(todoElement);
-    }
-  }
-});
-
-document.addEventListener(RENDER_EVENT, function () {
-  const uncompletedTODOList = document.getElementById("todos");
-  uncompletedTODOList.innerHTML = "";
-
   const completedTODOList = document.getElementById("finished");
   completedTODOList.innerHTML = "";
 
-  for (const todoItem of todos) {
+  for (const todoItem of TODOS) {
     const todoElement = makeTodo(todoItem);
-    if (!todoItem.isCompleted) uncompletedTODOList.append(todoElement);
-    else completedTODOList.append(todoElement);
+    !todoItem.isCompleted
+      ? uncompletedTODOList.append(todoElement)
+      : completedTODOList.append(todoElement);
   }
 });
