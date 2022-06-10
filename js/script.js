@@ -1,6 +1,7 @@
 const TODOS = [];
-
 const RENDER_EVENT = "render-todo";
+const SAVED_EVENT = "saved-todo";
+const STORAGE_KEY = "TODO_APPS";
 
 const generateTodoObject = (id, task, timestamp, isCompleted) => ({
   id,
@@ -10,6 +11,27 @@ const generateTodoObject = (id, task, timestamp, isCompleted) => ({
 });
 
 const generateId = () => +new Date();
+
+const isStorageExist = () => {
+  if (typeof Storage === undefined) {
+    alert("Browser kamu tidak mendukung local storage");
+    return false;
+  }
+  return true;
+};
+
+const loadDataFromStorage = () => {
+  const serializedData = localStorage.getItem(STORAGE_KEY);
+  let data = JSON.parse(serializedData);
+
+  if (data !== null) {
+    for (const todo of data) {
+      TODOS.push(todo);
+    }
+  }
+
+  document.dispatchEvent(new Event(RENDER_EVENT));
+};
 
 const addTodo = () => {
   const textTodo = document.getElementById("title").value;
@@ -25,6 +47,7 @@ const addTodo = () => {
   TODOS.push(todoObject);
 
   document.dispatchEvent(new Event(RENDER_EVENT));
+  saveData();
 };
 
 const findTodo = (todoId) => {
@@ -34,12 +57,21 @@ const findTodo = (todoId) => {
   return null;
 };
 
+const saveData = () => {
+  if (isStorageExist()) {
+    const parsed = JSON.stringify(TODOS);
+    localStorage.setItem(STORAGE_KEY, parsed);
+    document.dispatchEvent(new Event(SAVED_EVENT));
+  }
+};
+
 const addTaskToCompleted = (todoId) => {
   const todoTarget = findTodo(todoId);
 
   if (todoTarget != null) {
     todoTarget.isCompleted = true;
     document.dispatchEvent(new Event(RENDER_EVENT));
+    saveData();
   }
 };
 
@@ -60,6 +92,7 @@ const removeTaskFromCompleted = (todoId) => {
 
   TODOS.splice(todoTarget, 1);
   document.dispatchEvent(new Event(RENDER_EVENT));
+  saveData();
 };
 
 const undoTaskFromCompleted = (todoId) => {
@@ -69,6 +102,7 @@ const undoTaskFromCompleted = (todoId) => {
 
   todoTarget.isCompleted = false;
   document.dispatchEvent(new Event(RENDER_EVENT));
+  saveData();
 };
 
 const makeTodo = (todoObject) => {
@@ -123,6 +157,8 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault();
     addTodo();
   });
+
+  isStorageExist() && loadDataFromStorage();
 });
 
 document.addEventListener(RENDER_EVENT, () => {
@@ -138,4 +174,8 @@ document.addEventListener(RENDER_EVENT, () => {
       ? uncompletedTODOList.append(todoElement)
       : completedTODOList.append(todoElement);
   }
+});
+
+document.addEventListener(SAVED_EVENT, () => {
+  console.log(localStorage.getItem(STORAGE_KEY));
 });
